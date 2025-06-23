@@ -1,6 +1,7 @@
-opencv-python 
-dxcam 
-pynput 
-moviepy 
-Pillow 
+opencv-python>=4.5.0
+dxcam>=0.0.5
+pynput>=1.7.0
+moviepy>=1.0.3
+Pillow>=8.0.0
+numpy>=1.20.0
 tk
