@@ -1,0 +1,6 @@
+opencv-python 
+dxcam 
+pynput 
+moviepy 
+Pillow 
+tk
