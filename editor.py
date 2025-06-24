@@ -9,6 +9,7 @@ from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import threading
 import os
+import subprocess
 
 # --- Configuration ---
 RAW_VIDEO_FILE = "raw_recording.mp4"
@@ -185,16 +186,28 @@ class EditorApp(tk.Tk):
             return
             
         try:
-            # Load video
+            # Use OpenCV to get video properties
+            cap = cv2.VideoCapture(video_file)
+            if not cap.isOpened():
+                raise Exception("Could not open video file")
+                
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            cap.release()
+            
+            # Create VideoFileClip with known parameters
             self.clip = VideoFileClip(video_file)
+            self.clip.fps = fps
             
             # Load metadata
             with open(metadata_file, 'r') as f:
                 self.metadata = json.load(f)
             
             # Update UI
-            self.total_frames = int(self.clip.duration * self.clip.fps)
-            self.preview_height = int(PREVIEW_WIDTH * (self.clip.h / self.clip.w))
+            self.total_frames = frame_count
+            self.preview_height = int(PREVIEW_WIDTH * (height / width))
             
             # Reconfigure canvas
             self.canvas.config(height=self.preview_height)
@@ -422,14 +435,28 @@ def main():
     # Try to load default files if they exist
     if os.path.exists(RAW_VIDEO_FILE) and os.path.exists(METADATA_FILE):
         try:
+            # Use OpenCV to get video properties
+            cap = cv2.VideoCapture(RAW_VIDEO_FILE)
+            if not cap.isOpened():
+                raise Exception("Could not open video file")
+                
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            cap.release()
+            
+            # Create VideoFileClip with known parameters
             clip = VideoFileClip(RAW_VIDEO_FILE)
+            clip.fps = fps
+            
             with open(METADATA_FILE, 'r') as f:
                 metadata = json.load(f)
             
             app.clip = clip
             app.metadata = metadata
-            app.total_frames = int(clip.duration * clip.fps)
-            app.preview_height = int(PREVIEW_WIDTH * (clip.h / clip.w))
+            app.total_frames = frame_count
+            app.preview_height = int(PREVIEW_WIDTH * (height / width))
             
             # Update UI for loaded files
             app.canvas.config(height=app.preview_height)
